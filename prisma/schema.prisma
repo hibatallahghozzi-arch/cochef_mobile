@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  VILLAGER
+  MANAGER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COLLECTED
+  DECLINED
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  NFC
+  RESTAURANT_TICKET
+}
+
+enum MenuType {
+  DAILY
+  WEEKLY
+}
+
+model User {
+  id           String   @id @default(uuid())
+  fullName     String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  role         Role     @default(VILLAGER)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  wallet       Wallet?
+  favorites    Favorite[]
+  orders       Order[]
+  waitingTimes WaitingTime[] @relation("SetByManager")
+
+  @@map("users")
+}
+
+model Wallet {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  nfcBalance Decimal  @default(0) @db.Decimal(10, 2)
+  updatedAt  DateTime @updatedAt
+
+  @@map("wallets")
+}
+
+model Meal {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  imageUrl    String?
+  price       Decimal  @db.Decimal(10, 2)
+  calories    Decimal? @db.Decimal(6, 1)
+  proteinsG   Decimal? @db.Decimal(6, 1)
+  lipidsG     Decimal? @db.Decimal(6, 1)
+  fibersG     Decimal? @db.Decimal(6, 1)
+  allergens   String[]
+  ingredients String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  menus      MenuMeal[]
+  favorites  Favorite[]
+  orderItems OrderItem[]
+
+  @@map("meals")
+}
+
+model Menu {
+  id        String     @id @default(uuid())
+  date      DateTime   @db.Date
+  type      MenuType   @default(DAILY)
+  createdAt DateTime   @default(now())
+  meals     MenuMeal[]
+
+  @@unique([date, type])
+  @@map("menus")
+}
+
+model MenuMeal {
+  menuId String
+  mealId String
+  menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@id([menuId, mealId])
+  @@map("menu_meals")
+}
+
+model Favorite {
+  userId    String
+  mealId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  meal      Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, mealId])
+  @@map("favorites")
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  orderNumber   Int           @default(autoincrement())
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod
+  totalPrice    Decimal       @db.Decimal(10, 2)
+  qrCode        String
+  declineReason String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  mealId    String
+  meal      Meal    @relation(fields: [mealId], references: [id])
+  quantity  Int     @default(1)
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  @@map("order_items")
+}
+
+model WaitingTime {
+  id             String @id @default(uuid())
+  waitingMinutes Int
+
+  setById String
+  setBy   User   @relation("SetByManager", fields: [setById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
