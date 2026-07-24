@@ -9,6 +9,8 @@ import { MenusModule } from './menus/menus.module';
 import { OrdersModule } from './orders/orders.module';
 import { WaitingTimeModule } from './waiting-time/waiting-time.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { FeedbackModule } from './feedback/feedback.module';
+
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { FavoritesModule } from './favorites/favorites.module';
   OrdersModule,
   WaitingTimeModule,
   FavoritesModule,
+  FeedbackModule,
 ],
 })
 export class AppModule {}
