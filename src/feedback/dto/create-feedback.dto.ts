@@ -1,13 +1,17 @@
-import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFeedbackDto {
-  @IsInt()
-  @Min(1)
-  @Max(5)
+
+  @ApiProperty({
+    example: 5,
+    description: 'Rating from 1 to 5'
+  })
   rating: number;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
+
+  @ApiProperty({
+    example: "Excellent food and service!",
+    required: false
+  })
   comment?: string;
 }

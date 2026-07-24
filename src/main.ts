@@ -1,30 +1,29 @@
-import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const config = app.get(ConfigService);
 
-  app.setGlobalPrefix('api/v1');
+  const config = new DocumentBuilder()
+    .setTitle('CoChef API')
+    .setDescription('CoChef cafeteria management API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // strip properties not defined in the DTO
-      forbidNonWhitelisted: true, // reject unknown properties instead of silently dropping them
-      transform: true, // auto-convert payloads to DTO instances
-    }),
+  const document = SwaggerModule.createDocument(
+    app,
+    config,
   );
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  SwaggerModule.setup(
+    'api/docs',
+    app,
+    document,
+  );
 
-  app.enableCors();
-
-  const port = config.get<string>('PORT') ?? 3000;
-  await app.listen(port);
-  console.log(`CoChef API listening on http://localhost:${port}/api/v1`);
+  await app.listen(3000);
 }
 
 bootstrap();
