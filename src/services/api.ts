@@ -2,8 +2,8 @@ import axios from 'axios';
 
 import { secureStorage } from '@/utils/secureStorage';
 
-// Backend local accessible depuis Expo Go
-const API_BASE_URL = 'http://192.168.3.174:3000';
+// NestJS backend (PC IP)
+const API_BASE_URL = 'http://192.168.0.127:3000/api/v1';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -19,6 +19,7 @@ api.interceptors.request.use(async (config) => {
   const token = await secureStorage.getToken();
 
   if (token) {
+    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
 

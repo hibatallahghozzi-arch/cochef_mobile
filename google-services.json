@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1039645551518",
+    "project_id": "cochef-8b461",
+    "storage_bucket": "cochef-8b461.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039645551518:android:8b70d2de66c3207160048f",
+        "android_client_info": {
+          "package_name": "com.cochef.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJPo3dR30UC8ss7LRdWHTzrUZlucGL810"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

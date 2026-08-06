@@ -34,4 +34,9 @@ export const authApi = {
 
     return data;
   },
+  async updatePushToken(expoPushToken: string): Promise<void> {
+  await api.post('/users/push-token', {
+    expoPushToken,
+  });
+},
 };
