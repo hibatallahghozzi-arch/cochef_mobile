@@ -1,24 +1,50 @@
 import type { Meal } from './meal';
 
-export type OrderStatus = 'received' | 'preparing' | 'cooking' | 'ready' | 'collected';
+export type OrderStatus =
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'PREPARING'
+  | 'READY'
+  | 'COLLECTED'
+  | 'DECLINED';
+
+export type PaymentMethod =
+  | 'CASH'
+  | 'CHECK'
+  | 'NFC'
+  | 'RESTAURANT_TICKET';
 
 export interface OrderItem {
   meal: Meal;
   quantity: number;
+  unitPrice: number;
 }
 
 export interface Order {
   id: string;
+  orderNumber?: number;
+
   items: OrderItem[];
-  subtotal: number;
-  serviceFee: number;
-  total: number;
+
+  totalPrice: number;
+
   status: OrderStatus;
-  qrCodeUrl?: string;
-  estimatedWaitMinutes?: number;
+
+  paymentMethod: PaymentMethod;
+
+  qrCode?: string;
+
+  declineReason?: string;
+
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateOrderPayload {
-  items: Array<{ mealId: string; quantity: number }>;
+  paymentMethod: PaymentMethod;
+
+  items: Array<{
+    mealId: string;
+    quantity: number;
+  }>;
 }

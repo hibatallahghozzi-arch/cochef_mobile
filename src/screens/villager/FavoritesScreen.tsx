@@ -14,22 +14,51 @@ import type { Meal } from '@/types/meal';
 type Props = NativeStackScreenProps<RootStackParamList, 'Favorites'>;
 
 export default function FavoritesScreen({ navigation }: Props) {
-  const { data: favorites, isLoading, refetch, isRefetching } = useFavorites();
+  const {
+    data: favorites,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useFavorites();
+
   const { removeFavorite } = useToggleFavorite();
   const { addItem } = useCart();
 
+  /*
+   * Remove duplicate meals.
+   *
+   * If the backend accidentally returns the same meal
+   * more than once, only the first one will be displayed.
+   */
+  const uniqueFavorites = Array.from(
+    new Map(
+      (favorites ?? []).map((meal: Meal) => [meal.id, meal]),
+    ).values(),
+  );
+
   return (
     <>
-      <Header title="Favoris" onBackPress={() => navigation.goBack()} />
+      <Header
+        title="Favoris"
+        onBackPress={() => navigation.goBack()}
+      />
+
       {isLoading ? (
         <Loader fullScreen />
       ) : (
         <FlatList<Meal>
-          data={favorites ?? []}
-          keyExtractor={(meal) => meal.id}
+          data={uniqueFavorites}
+          keyExtractor={(meal) => `favorite-${meal.id}`}
           className="flex-1 bg-background"
           contentContainerClassName="gap-3 p-4"
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.primary}
+            />
+          }
           ListEmptyComponent={
             <EmptyState
               icon="heart-outline"
@@ -41,7 +70,11 @@ export default function FavoritesScreen({ navigation }: Props) {
             <MealCard
               meal={meal}
               isFavorite
-              onPress={() => navigation.navigate('MealDetail', { mealId: meal.id })}
+              onPress={() =>
+                navigation.navigate('MealDetail', {
+                  mealId: meal.id,
+                })
+              }
               onToggleFavorite={() => removeFavorite(meal.id)}
               onAddPress={() => addItem(meal)}
             />

@@ -1,4 +1,10 @@
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 
 import type { Meal } from '@/types/meal';
 
@@ -17,46 +23,117 @@ interface CartContextValue {
   itemCount: number;
 }
 
-const CartContext = createContext<CartContextValue | undefined>(undefined);
+const CartContext = createContext<CartContextValue | undefined>(
+  undefined,
+);
 
-export function CartProvider({ children }: PropsWithChildren) {
+export function CartProvider({
+  children,
+}: PropsWithChildren) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const addItem = (meal: Meal, quantity = 1) => {
+  const addItem = (
+    meal: Meal,
+    quantity = 1,
+  ) => {
     setItems((current) => {
-      const existing = current.find((item) => item.meal.id === meal.id);
+      const existing = current.find(
+        (item) => item.meal.id === meal.id,
+      );
+
       if (existing) {
         return current.map((item) =>
-          item.meal.id === meal.id ? { ...item, quantity: item.quantity + quantity } : item,
+          item.meal.id === meal.id
+            ? {
+                ...item,
+                quantity:
+                  item.quantity + quantity,
+              }
+            : item,
         );
       }
-      return [...current, { meal, quantity }];
+
+      return [
+        ...current,
+        {
+          meal,
+          quantity,
+        },
+      ];
     });
   };
 
-  const updateQuantity = (mealId: string, quantity: number) => {
+  const updateQuantity = (
+    mealId: string,
+    quantity: number,
+  ) => {
     if (quantity <= 0) {
       removeItem(mealId);
       return;
     }
-    setItems((current) => current.map((item) => (item.meal.id === mealId ? { ...item, quantity } : item)));
+
+    setItems((current) =>
+      current.map((item) =>
+        item.meal.id === mealId
+          ? {
+              ...item,
+              quantity,
+            }
+          : item,
+      ),
+    );
   };
 
   const removeItem = (mealId: string) => {
-    setItems((current) => current.filter((item) => item.meal.id !== mealId));
+    setItems((current) =>
+      current.filter(
+        (item) => item.meal.id !== mealId,
+      ),
+    );
   };
 
-  const clear = () => setItems([]);
+  const clear = () => {
+    setItems([]);
+  };
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.meal.price * item.quantity, 0),
-    [items],
-  );
+  /**
+   * Calculate the cart subtotal.
+   *
+   * The backend sends Prisma Decimal values as strings,
+   * for example:
+   *
+   * price: "15"
+   *
+   * Therefore we explicitly convert the price to Number()
+   * before performing arithmetic.
+   */
+  const subtotal = useMemo(() => {
+    return items.reduce((sum, item) => {
+      const price = Number(item.meal.price);
 
-  const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+      return sum + price * item.quantity;
+    }, 0);
+  }, [items]);
+
+  const itemCount = useMemo(() => {
+    return items.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+  }, [items]);
 
   return (
-    <CartContext.Provider value={{ items, addItem, updateQuantity, removeItem, clear, subtotal, itemCount }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addItem,
+        updateQuantity,
+        removeItem,
+        clear,
+        subtotal,
+        itemCount,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -64,8 +141,12 @@ export function CartProvider({ children }: PropsWithChildren) {
 
 export function useCart(): CartContextValue {
   const context = useContext(CartContext);
+
   if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error(
+      'useCart must be used within a CartProvider',
+    );
   }
+
   return context;
 }

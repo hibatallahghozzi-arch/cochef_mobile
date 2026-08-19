@@ -2,14 +2,20 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuth } from '@/contexts/AuthContext';
-import FavoritesScreen from '@/screens/villager/FavoritesScreen';
+
 import LoginScreen from '@/screens/auth/LoginScreen';
-import MealDetailScreen from '@/screens/villager/MealDetailScreen';
-import OrderDetailScreen from '@/screens/villager/OrderDetailScreen';
 import RegisterScreen from '@/screens/auth/RegisterScreen';
 import SplashScreen from '@/screens/auth/SplashScreen';
 
-import MainTabNavigator from './MainTabNavigator';
+import AddressesScreen from '@/screens/villager/AddressesScreen';
+import FavoritesScreen from '@/screens/villager/FavoritesScreen';
+import FeedbackScreen from '@/screens/villager/FeedbackScreen';
+import MealDetailScreen from '@/screens/villager/MealDetailScreen';
+import NotificationsScreen from '@/screens/villager/NotificationsScreen';
+import OrderDetailScreen from '@/screens/villager/OrderDetailScreen';
+import PersonalInformationScreen from '@/screens/villager/PersonalInformationScreen';
+
+import DrawerNavigator from './DrawerNavigator';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -19,20 +25,82 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        {/* =========================
+            APP BOOT
+        ========================== */}
         {isBooting ? (
-          <Stack.Screen name="Splash" component={SplashScreen} />
+          <Stack.Screen
+            name="Splash"
+            component={SplashScreen}
+          />
         ) : isAuthenticated ? (
           <>
-            <Stack.Screen name="Main" component={MainTabNavigator} />
-            <Stack.Screen name="Favorites" component={FavoritesScreen} />
-            <Stack.Screen name="MealDetail" component={MealDetailScreen} />
-            <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+            {/* =========================
+                MAIN APP
+            ========================== */}
+            <Stack.Screen
+              name="Main"
+              component={DrawerNavigator}
+            />
+
+            {/* =========================
+                VILLAGER SCREENS
+            ========================== */}
+
+            <Stack.Screen
+              name="Favorites"
+              component={FavoritesScreen}
+            />
+
+            <Stack.Screen
+              name="MealDetail"
+              component={MealDetailScreen}
+            />
+
+            <Stack.Screen
+              name="OrderDetail"
+              component={OrderDetailScreen}
+            />
+
+            <Stack.Screen
+              name="Feedback"
+              component={FeedbackScreen}
+            />
+
+            <Stack.Screen
+              name="PersonalInformation"
+              component={PersonalInformationScreen}
+            />
+
+            <Stack.Screen
+              name="Addresses"
+              component={AddressesScreen}
+            />
+
+            <Stack.Screen
+              name="Notifications"
+              component={NotificationsScreen}
+            />
           </>
         ) : (
           <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
+            {/* =========================
+                AUTHENTICATION
+            ========================== */}
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+            />
+
+            <Stack.Screen
+              name="Register"
+              component={RegisterScreen}
+            />
           </>
         )}
       </Stack.Navigator>

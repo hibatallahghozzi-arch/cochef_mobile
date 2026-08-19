@@ -9,11 +9,12 @@ import ProfileScreen from '@/screens/villager/ProfileScreen';
 
 import type { MainTabParamList } from './types';
 
-// TODO(Phase 5): swap these hex literals for the shared colors.ts tokens once
-// the design-system files exist.
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TAB_ICONS: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
+const TAB_ICONS: Record<
+  keyof MainTabParamList,
+  keyof typeof Ionicons.glyphMap
+> = {
   Home: 'home-outline',
   Menu: 'restaurant-outline',
   Cart: 'cart-outline',
@@ -28,8 +29,13 @@ export default function MainTabNavigator() {
         headerShown: false,
         tabBarActiveTintColor: '#0B3C5D',
         tabBarInactiveTintColor: '#6B7280',
+
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name={TAB_ICONS[route.name as keyof MainTabParamList]} size={size} color={color} />
+          <Ionicons
+            name={TAB_ICONS[route.name]}
+            size={size}
+            color={color}
+          />
         ),
       })}
     >

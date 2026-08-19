@@ -11,6 +11,7 @@ import { authApi } from '@/services/auth.api';
 import { setUnauthorizedHandler } from '@/services/api';
 import { registerForPushNotificationsAsync } from '@/services/notifications';
 import { secureStorage } from '@/utils/secureStorage';
+
 import type {
   LoginPayload,
   RegisterPayload,
@@ -39,78 +40,117 @@ export function AuthProvider({
 
   const queryClient = useQueryClient();
 
+  /*
+   * Restore authentication when the app starts.
+   */
   useEffect(() => {
     let isMounted = true;
 
-    (async () => {
-      const token = await secureStorage.getToken();
-
-      if (!token) {
-        if (isMounted) {
-          setIsBooting(false);
-        }
-        return;
-      }
-
+    const restoreSession = async () => {
       try {
+        const token = await secureStorage.getToken();
+
+        if (!token) {
+          return;
+        }
+
         const me = await authApi.me();
 
         if (isMounted) {
           setUser(me);
         }
-      } catch {
+      } catch (error) {
+        console.log(
+          'Session restore failed:',
+          error,
+        );
+
         await secureStorage.clearToken();
+
+        if (isMounted) {
+          setUser(null);
+        }
       } finally {
         if (isMounted) {
           setIsBooting(false);
         }
       }
-    })();
+    };
+
+    restoreSession();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
+  /*
+   * If the API returns 401, automatically log the user out.
+   */
   useEffect(() => {
     setUnauthorizedHandler(() => {
       setUser(null);
       void secureStorage.clearToken();
+      queryClient.clear();
     });
-  }, []);
+  }, [queryClient]);
 
+  /*
+   * Login
+   */
   const loginMutation = useMutation({
     mutationFn: authApi.login,
 
-    onSuccess: async ({ user: loggedInUser, accessToken }) => {
+    onSuccess: async ({
+      user: loggedInUser,
+      accessToken,
+    }) => {
+      console.log(
+        'LOGIN SUCCESS:',
+        loggedInUser,
+      );
+
       await secureStorage.setToken(accessToken);
 
       setUser(loggedInUser);
 
+      /*
+       * Push notifications are optional.
+       * A notification error must NOT make login fail.
+       */
       try {
-        console.log('📱 Registering for push notifications...');
+        console.log(
+          'Registering for push notifications...',
+        );
 
         const expoPushToken =
           await registerForPushNotificationsAsync();
 
         if (expoPushToken) {
-          console.log('📤 Sending push token to backend...');
+          console.log(
+            'Sending push token to backend...',
+          );
 
-          await authApi.updatePushToken(expoPushToken);
+          await authApi.updatePushToken(
+            expoPushToken,
+          );
 
-          console.log('✅ Push token saved successfully');
-        } else {
-          console.log('⚠️ No Expo Push Token received');
+          console.log(
+            'Push token saved successfully',
+          );
         }
       } catch (error) {
-        console.error(
-          '❌ Error registering push notifications:',
+        console.log(
+          'Push notification setup failed:',
           error,
         );
       }
     },
   });
 
+  /*
+   * Register
+   */
   const registerMutation = useMutation({
     mutationFn: authApi.register,
 
@@ -118,26 +158,65 @@ export function AuthProvider({
       user: registeredUser,
       accessToken,
     }) => {
+      console.log(
+        'REGISTER SUCCESS:',
+        registeredUser,
+      );
+
       await secureStorage.setToken(accessToken);
 
       setUser(registeredUser);
+
+      /*
+       * Push notifications are optional.
+       */
+      try {
+        console.log(
+          'Registering for push notifications...',
+        );
+
+        const expoPushToken =
+          await registerForPushNotificationsAsync();
+
+        if (expoPushToken) {
+          await authApi.updatePushToken(
+            expoPushToken,
+          );
+
+          console.log(
+            'Push token saved successfully',
+          );
+        }
+      } catch (error) {
+        console.log(
+          'Push notification setup failed:',
+          error,
+        );
+      }
     },
   });
 
+  /*
+   * Public login function
+   */
   const login = async (
     payload: LoginPayload,
   ): Promise<void> => {
     await loginMutation.mutateAsync(payload);
   };
 
+  /*
+   * Public register function
+   */
   const register = async (
     payload: RegisterPayload,
   ): Promise<void> => {
-    console.log('AUTH CONTEXT REGISTER:', payload);
-
     await registerMutation.mutateAsync(payload);
   };
 
+  /*
+   * Logout
+   */
   const logout = async (): Promise<void> => {
     await secureStorage.clearToken();
 
@@ -146,15 +225,17 @@ export function AuthProvider({
     queryClient.clear();
   };
 
+  const isSubmitting =
+    loginMutation.isPending ||
+    registerMutation.isPending;
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: Boolean(user),
+        isAuthenticated: !!user,
         isBooting,
-        isSubmitting:
-          loginMutation.isPending ||
-          registerMutation.isPending,
+        isSubmitting,
         login,
         register,
         logout,

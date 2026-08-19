@@ -2,30 +2,80 @@
  * Central navigation typing for the whole app.
  *
  * RootStackParamList is the single native-stack that sits at the top of the
- * app: Splash -> (Login | Register) when logged out, or Main (the tab
- * navigator) + Favorites when logged in. Favorites is deliberately NOT a tab
- * (per the specified bottom-tab structure: Accueil, Menu, Panier, Commandes,
- * Profil) — it's a screen pushed on top of the root stack, reachable from any
- * tab via navigation.navigate('Favorites'), which React Navigation resolves
- * by bubbling up to the parent stack automatically.
+ * app:
+ *
+ * Splash -> (Login | Register) when logged out
+ *
+ * or
+ *
+ * Main (Drawer + Bottom Tabs) + additional villager screens when logged in.
+ *
+ * Favorites, MealDetail, OrderDetail, Feedback, PersonalInformation,
+ * Addresses and Notifications are deliberately NOT tabs.
+ * They are screens pushed on top of the root stack.
  */
+
 export type RootStackParamList = {
   Splash: undefined;
+
   Login: undefined;
+
   Register: undefined;
+
+  /**
+   * Main application container.
+   * Contains the DrawerNavigator, which contains MainTabNavigator.
+   */
   Main: undefined;
+
+  /**
+   * Villager screens outside the bottom tabs.
+   */
   Favorites: undefined;
-  MealDetail: { mealId: string };
-  // Serves confirmation, receipt/QR, and live tracking for one order — the
-  // design shows these as separate mockups, but they're really three views
-  // of the same order at different points in its lifecycle, so one screen
-  // with a status-aware layout covers all three without extra routes.
-  OrderDetail: { orderId: string };
+
+  MealDetail: {
+    mealId: string;
+  };
+
+  OrderDetail: {
+    orderId: string;
+  };
+
+  /**
+   * Feedback screen.
+   *
+   * Allows the villager to:
+   * - rate their experience from 1 to 5 stars
+   * - leave an optional comment
+   */
+  Feedback: undefined;
+
+  /**
+   * Personal information screen.
+   */
+  PersonalInformation: undefined;
+
+  /**
+   * Addresses screen.
+   */
+  Addresses: undefined;
+
+  /**
+   * Notifications screen.
+   */
+  Notifications: undefined;
 };
 
 /**
- * MainTabParamList is the bottom-tab navigator shown once the user is
- * authenticated.
+ * MainTabParamList is the bottom-tab navigator shown once
+ * the user is authenticated.
+ *
+ * Bottom tabs:
+ * Accueil
+ * Menu
+ * Panier
+ * Commandes
+ * Profil
  */
 export type MainTabParamList = {
   Home: undefined;
@@ -35,8 +85,10 @@ export type MainTabParamList = {
   Profile: undefined;
 };
 
-// Lets useNavigation() / screenOptions infer route names and params without
-// having to pass <RootStackParamList> generics at every call site.
+/**
+ * Allows useNavigation() and other React Navigation APIs
+ * to automatically know about the root-level routes.
+ */
 declare global {
   namespace ReactNavigation {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
