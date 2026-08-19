@@ -35,4 +35,23 @@ export class UsersService {
       data: { passwordHash },
     });
   }
+
+  async updatePushToken(
+    userId: string,
+    expoPushToken: string,
+  ) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        expoPushToken,
+      },
+      select: {
+        id: true,
+        email: true,
+        expoPushToken: true,
+      },
+    });
+  }
 }

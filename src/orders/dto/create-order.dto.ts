@@ -20,9 +20,6 @@ export class CreateOrderItemDto {
 }
 
 export class CreateOrderDto {
-  @IsString()
-  userId: string;
-
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
 

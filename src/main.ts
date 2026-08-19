@@ -5,6 +5,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api/v1');
+
   const config = new DocumentBuilder()
     .setTitle('CoChef API')
     .setDescription('CoChef cafeteria management API')
@@ -23,7 +25,7 @@ async function bootstrap() {
     document,
   );
 
-  await app.listen(3000);
+  await app.listen(3000, '0.0.0.0');
 }
 
 bootstrap();
