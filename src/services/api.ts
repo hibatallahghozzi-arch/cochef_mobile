@@ -3,7 +3,8 @@ import axios from 'axios';
 import { secureStorage } from '@/utils/secureStorage';
 
 // NestJS backend (PC IP)
-const API_BASE_URL = 'http://192.168.11.36:3000/api/v1';
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.11.36:3000/api/v1';
 export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
